@@ -100,6 +100,27 @@ OPTIONS = {
             "按 historical_report_synthesis_rules.md 进行趋势判断。"
         ),
     },
+    "12": {
+        "label": "管理层一页纸",
+        "period": "ad-hoc",
+        "filename": "ad-hoc-{date}-one-page-strategy-brief.md",
+        "template": SKILL / "templates" / "one_page_strategy_brief.md",
+        "instruction": "根据最近一次报告或用户指定报告生成管理层一页纸。",
+    },
+    "13": {
+        "label": "研发资源决策",
+        "period": "ad-hoc",
+        "filename": "ad-hoc-{date}-rd-resource-decision.md",
+        "template": SKILL / "templates" / "rd_resource_decision.md",
+        "instruction": "将市场和竞品信号转为研发资源决策。",
+    },
+    "14": {
+        "label": "TCO 低价反制",
+        "period": "ad-hoc",
+        "filename": "ad-hoc-{date}-tco-countermeasure.md",
+        "template": SKILL / "templates" / "tco_countermeasure.md",
+        "instruction": "针对低价压力或疑似低于成本报价生成 TCO 反制方案。",
+    },
 }
 
 
@@ -107,7 +128,7 @@ def choose() -> tuple[str, str]:
     print("请选择要运行的战略监控任务：")
     for key, item in OPTIONS.items():
         print(f"{key}. {item['label']}")
-    raw = input("请输入编号；3/4 可追加事件或竞品名：").strip()
+    raw = input("请输入编号；3/4/14 可追加事件、竞品名或低价场景：").strip()
     if not raw:
         raise SystemExit("未选择任务。")
     parts = raw.split(maxsplit=1)
@@ -130,6 +151,14 @@ def build_report(key: str, extra: str, date: str) -> Path:
             .replace("_", "-")
         )
         filename = f"ad-hoc-{date}-{safe_name}-competitor-dossier.md"
+    if key == "14" and extra:
+        safe_name = (
+            extra.lower()
+            .replace("/", "-")
+            .replace(" ", "-")
+            .replace("_", "-")
+        )
+        filename = f"ad-hoc-{date}-{safe_name}-tco-countermeasure.md"
     path = OUTPUT / filename
 
     template_path = item["template"]
@@ -151,8 +180,10 @@ def make_codex_prompt(instruction: str, extra: str, path: Path) -> str:
     return (
         "使用 ./small-power-charging-strategy-monitor 这个 skill，"
         f"{instruction} {extra_text} "
-        "读取所有 inputs/ 文件，按证据分级和战略阈值执行，"
+        "读取所有 inputs/ 文件，优先使用 source_registry.md 和 search_playbook.md，按证据分级和战略阈值执行，"
+        "如涉及挚达/智达，读取 zhida_risk_model.md，"
         "如为季度或历史综合任务，读取 historical_report_synthesis_rules.md 并综合历史报告，"
+        "如涉及内部数据缺口，使用 internal_data_template.md 转成补数任务，"
         "正文必须中文，结论性内容使用颜色标注，"
         f"最终完整报告写入 {path.as_posix()}。"
     )

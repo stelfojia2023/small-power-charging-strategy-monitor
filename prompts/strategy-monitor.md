@@ -58,13 +58,30 @@
     - 读取 `output/` 下最近 3 份月度报告、最近 1 份证据矩阵、最近 1 份行动跟踪表和上一季度报告。
     - 使用 `inputs/historical_report_synthesis_rules.md`，必须分析 H1-H6 历史趋势、证据等级变化、未关闭内部数据缺口、上期行动闭环和季度级战略调整触发条件。
 
+12. 管理层一页纸
+    - 使用 `templates/one_page_strategy_brief.md`
+    - 输出：`output/ad-hoc-YYYY-MM-DD-one-page-strategy-brief.md`
+    - 根据最近一次报告或用户指定报告生成一页纸结论，必须包含本期结论、最大变化、最大风险、必须立即做、暂时不要做、需要老板决策。
+
+13. 研发资源决策
+    - 使用 `templates/rd_resource_decision.md`
+    - 输出：`output/ad-hoc-YYYY-MM-DD-rd-resource-decision.md`
+    - 将市场和竞品信号转为研发继续、加速、暂停、只做预研或禁止投入的决策。
+
+14. TCO 低价反制
+    - 使用 `templates/tco_countermeasure.md`
+    - 输出：`output/ad-hoc-YYYY-MM-DD-tco-countermeasure.md`
+    - 用于客户目标价下移、竞品低价压价或疑似低于成本报价，必须校正报价范围、服务责任、质保、安装、返修和付款条件。
+
 ## 执行规则
 
 无论选择哪一项，都必须遵守：
 
 - 读取 `SKILL.md`。
-- 读取 `inputs/company_profile.md`、`inputs/strategic_assumptions.md`、`inputs/competitor_watchlist.md`、`inputs/source_policy.md`、`inputs/internal_data_requirements.md`、`inputs/prompt_ontology.md`、`inputs/strategic_thresholds.md`。
+- 读取 `inputs/company_profile.md`、`inputs/strategic_assumptions.md`、`inputs/competitor_watchlist.md`、`inputs/source_policy.md`、`inputs/source_registry.md`、`inputs/search_playbook.md`、`inputs/internal_data_requirements.md`、`inputs/internal_data_template.md`、`inputs/prompt_ontology.md`、`inputs/strategic_thresholds.md`。
 - 如选择 11，额外读取 `inputs/historical_report_synthesis_rules.md` 和 `output/` 中的历史报告；不得直接复制历史结论，必须对比本期新增证据和历史趋势。
+- 如任务涉及挚达/智达，额外读取 `inputs/zhida_risk_model.md`。
+- 如选择 1、3、8、9、10、11，必须使用或嵌入 `templates/strategy_scorecard.md`。
 - 正文必须中文，无法自然替代的名称、标准、型号、URL、`OEM/ODM`、`VAVE`、`AC`、`DC`、`RFQ`、`GB/T`、`OCPP`、`Tesla`、`Wattsaving` 可保留英文。
 - 结论性内容必须用 Markdown 兼容 HTML 颜色标注。
 - 关键结论必须标注证据等级和内部数据缺口。
@@ -87,8 +104,12 @@
 9. 海外 AC 专题
 10. 标准与认证专题
 11. 季度历史报告综合分析
+12. 管理层一页纸
+13. 研发资源决策
+14. TCO 低价反制
 
-请输入编号；如选择 3 或 4，可直接追加事件或竞品名。
+请输入编号；如选择 3、4 或 14，可直接追加事件、竞品名或低价场景。
 示例：3 智达/挚达最新低价竞标是否影响五菱策略
 示例：4 公牛
+示例：14 五菱项目竞品低价压价
 ```

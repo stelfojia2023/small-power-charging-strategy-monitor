@@ -15,10 +15,14 @@ Before each run, read:
 - `inputs/strategic_assumptions.md`
 - `inputs/competitor_watchlist.md`
 - `inputs/source_policy.md`
+- `inputs/source_registry.md`
+- `inputs/search_playbook.md`
 - `inputs/internal_data_requirements.md`
+- `inputs/internal_data_template.md`
 - `inputs/prompt_ontology.md`
 - `inputs/strategic_thresholds.md`
 - `inputs/historical_report_synthesis_rules.md` when running quarterly or historical synthesis
+- `inputs/zhida_risk_model.md` when Zhida is discussed
 
 Use the appropriate template:
 
@@ -29,6 +33,10 @@ Use the appropriate template:
 - Evidence review: `templates/evidence_matrix.md`
 - Competitor deep dive: `templates/competitor_dossier.md`
 - Action tracking: `templates/action_tracker.md`
+- Strategy scorecard: `templates/strategy_scorecard.md`
+- Management one-page brief: `templates/one_page_strategy_brief.md`
+- R&D resource decision: `templates/rd_resource_decision.md`
+- TCO low-price countermeasure: `templates/tco_countermeasure.md`
 
 ## Report Modes
 
@@ -39,6 +47,9 @@ Choose the mode from the user request:
 - `skill-audit`: evaluate whether the monitoring system itself is complete, whether data fields are missing, and how the skill should be improved.
 - `competitor-dossier`: create or update a single competitor profile using the same evidence rules.
 - `evidence-refresh`: update only the evidence matrix and unresolved internal data gaps.
+- `one-page-brief`: convert a strategy report into a management one-page brief.
+- `rd-resource-decision`: convert market and competitor evidence into R&D resource decisions.
+- `tco-countermeasure`: respond to low-price pressure using TCO, scope, quality, service, and stop-loss logic.
 
 ## Slash-Style Invocation
 
@@ -68,7 +79,7 @@ Use this operating rhythm unless the user specifies another cadence:
 
 ## Evidence Rules
 
-Use current external evidence for each run. Follow `inputs/source_policy.md`.
+Use current external evidence for each run. Follow `inputs/source_policy.md`, `inputs/source_registry.md`, and `inputs/search_playbook.md`.
 
 Prioritize sources in this order:
 
@@ -100,28 +111,33 @@ Otherwise mark it as `低价压力` or `疑似低于成本，需内部验证`.
 ## Workflow
 
 1. Define the monitoring period, such as weekly, monthly, quarterly, or ad hoc.
-2. Read the company profile, strategic assumptions, competitor watchlist, source policy, prompt ontology, internal data requirements, and strategic thresholds from `inputs/`.
+2. Read the company profile, strategic assumptions, competitor watchlist, source policy, source registry, search playbook, prompt ontology, internal data requirements, internal data template, and strategic thresholds from `inputs/`.
 3. Normalize keywords and company aliases using `inputs/prompt_ontology.md`.
-4. Collect evidence for market demand, price, tenders, OEM procurement, installation services, competitor products, competitor customers, financing, margins, overseas moves, standards, CCC/GB/T/OCPP updates, and overseas certification.
-5. Build or update an evidence matrix using `templates/evidence_matrix.md`.
-6. Separate conclusions into:
+4. Start collection from the fixed sources in `inputs/source_registry.md`, then use `inputs/search_playbook.md` to answer the relevant reusable research questions.
+5. Collect evidence for market demand, price, tenders, OEM procurement, installation services, competitor products, competitor customers, financing, margins, overseas moves, standards, CCC/GB/T/OCPP updates, and overseas certification.
+6. Build or update an evidence matrix using `templates/evidence_matrix.md`.
+7. Separate conclusions into:
    - Publicly verifiable.
    - Internally required.
    - Weak signal only.
    - Evidence insufficient.
-7. Check internal data needs using `inputs/internal_data_requirements.md`; list missing fields explicitly.
-8. Evaluate H1-H6 against `inputs/strategic_thresholds.md`. Do not rely only on qualitative wording.
-9. For each important competitor, use `templates/competitor_dossier.md` when the monthly report needs deeper support.
-10. Filter noise. Keep only evidence that affects demand, price, customer access, profit pool, competitor strategy, product roadmap, margin risk, R&D allocation, standards/certification, or channel strategy.
-11. Validate H1-H6. Mark each assumption as `成立`, `部分变化`, `不成立`, or `证据不足`.
-12. Update the competitor strategy map for Zhida, Keda Intelligent, Bull, Star Charge, Wattsaving, and Tesla China. Add other competitors only when evidence shows strategic relevance.
-13. Decide the adjustment level:
+8. Check internal data needs using `inputs/internal_data_requirements.md` and `inputs/internal_data_template.md`; list missing fields explicitly and convert P0/P1 gaps into fill-in tasks.
+9. Evaluate H1-H6 against `inputs/strategic_thresholds.md`. Do not rely only on qualitative wording.
+10. Use `templates/strategy_scorecard.md` for monthly, quarterly, and ad hoc strategy decisions so scoring is comparable over time.
+11. For each important competitor, use `templates/competitor_dossier.md` when the report needs deeper support. If the competitor is Zhida, also use `inputs/zhida_risk_model.md`.
+12. Filter noise. Keep only evidence that affects demand, price, customer access, profit pool, competitor strategy, product roadmap, margin risk, R&D allocation, standards/certification, or channel strategy.
+13. Validate H1-H6. Mark each assumption as `成立`, `部分变化`, `不成立`, or `证据不足`.
+14. Update the competitor strategy map for Zhida, Keda Intelligent, Bull, Star Charge, Wattsaving, and Tesla China. Add other competitors only when evidence shows strategic relevance.
+15. Decide the adjustment level:
    - A. 维持战略
    - B. 小幅调整
    - C. 重大调整
    - D. 立即止损
-14. Convert the decision into actions for 1-4 weeks and 6-24 months. Use `templates/action_tracker.md` for action tracking.
-15. State what should not be done. Explicitly reject attractive but unsupported moves.
+16. Convert the decision into actions for 1-4 weeks and 6-24 months. Use `templates/action_tracker.md` for action tracking.
+17. For management-facing output, create or include `templates/one_page_strategy_brief.md`.
+18. For engineering-facing output, create or include `templates/rd_resource_decision.md`.
+19. If the trigger is low-price pressure, customer target price decline, or suspected below-cost bidding, use `templates/tco_countermeasure.md`.
+20. State what should not be done. Explicitly reject attractive but unsupported moves.
 
 For quarterly or historical synthesis runs:
 
@@ -176,7 +192,7 @@ Always address standards and certification risk:
 
 ## Output Requirements
 
-Use `templates/weekly_report_template.md` for weekly scans, `templates/monthly_report_template.md` for full monthly reviews, and `templates/quarterly_report_template.md` for quarterly historical synthesis. Use `templates/decision_matrix.md` whenever the user asks whether to maintain, adjust, or stop a strategic direction.
+Use `templates/weekly_report_template.md` for weekly scans, `templates/monthly_report_template.md` for full monthly reviews, and `templates/quarterly_report_template.md` for quarterly historical synthesis. Use `templates/decision_matrix.md` whenever the user asks whether to maintain, adjust, or stop a strategic direction. Use `templates/strategy_scorecard.md`, `templates/one_page_strategy_brief.md`, `templates/rd_resource_decision.md`, and `templates/tco_countermeasure.md` when the task requires comparable scoring, management reporting, R&D resource decisions, or low-price countermeasures.
 
 Every run must create a Markdown file under `output/`. Do not only answer in chat unless the user explicitly asks for chat-only output.
 
@@ -220,6 +236,9 @@ For monthly and quarterly `strategy-review` runs, include an evidence matrix sec
 ```text
 output/<period>-<YYYY-MM-DD>-evidence-matrix.md
 output/<period>-<YYYY-MM-DD>-action-tracker.md
+output/<period>-<YYYY-MM-DD>-strategy-scorecard.md
+output/<period>-<YYYY-MM-DD>-one-page-strategy-brief.md
+output/<period>-<YYYY-MM-DD>-rd-resource-decision.md
 ```
 
 For competitor deep dives, create:

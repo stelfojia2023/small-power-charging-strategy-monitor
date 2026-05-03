@@ -18,16 +18,24 @@ small-power-charging-strategy-monitor/
 │   ├── strategic_assumptions.md
 │   ├── competitor_watchlist.md
 │   ├── source_policy.md
+│   ├── source_registry.md
+│   ├── search_playbook.md
 │   ├── internal_data_requirements.md
+│   ├── internal_data_template.md
 │   ├── prompt_ontology.md
 │   ├── strategic_thresholds.md
-│   └── historical_report_synthesis_rules.md
+│   ├── historical_report_synthesis_rules.md
+│   └── zhida_risk_model.md
 ├── templates/
 │   ├── weekly_report_template.md
 │   ├── monthly_report_template.md
 │   ├── quarterly_report_template.md
 │   ├── decision_matrix.md
 │   ├── evidence_matrix.md
+│   ├── strategy_scorecard.md
+│   ├── one_page_strategy_brief.md
+│   ├── rd_resource_decision.md
+│   ├── tco_countermeasure.md
 │   ├── competitor_dossier.md
 │   └── action_tracker.md
 └── README.md
@@ -87,14 +95,22 @@ Each run must follow this sequence:
 The skill now separates:
 
 - Publicly verifiable evidence.
+- Fixed source registry.
+- Reusable search questions.
 - Internal data required for closure.
+- Internal data fill-in workflow.
 - Weak signals.
 - Evidence gaps.
 - Historical report trends.
+- Strategy scoring.
+- R&D resource decisions.
+- TCO low-price countermeasures.
 
 Do not claim below-cost bidding, negative-margin expansion, or project profitability without internal data such as quote, BOM, margin, RFQ, installation cost, and service scope.
 
 For quarterly analysis, the skill must read `inputs/historical_report_synthesis_rules.md` and then synthesize recent `output/` artifacts before producing the current decision. The goal is to identify repeated risks, evidence upgrades, unresolved internal data gaps, and unfinished actions across months.
+
+For Zhida-related analysis, the skill must read `inputs/zhida_risk_model.md` and evaluate OEM scale delivery, price-anchor attack, installation recovery, platform/data, capital support, overseas growth, and aftermarket entry.
 
 ## Output Rules
 
@@ -129,6 +145,9 @@ output/monthly-YYYY-MM-DD-evidence-matrix.md
 output/monthly-YYYY-MM-DD-action-tracker.md
 output/quarterly-YYYY-MM-DD-evidence-matrix.md
 output/quarterly-YYYY-MM-DD-action-tracker.md
+output/<period>-YYYY-MM-DD-strategy-scorecard.md
+output/<period>-YYYY-MM-DD-one-page-strategy-brief.md
+output/<period>-YYYY-MM-DD-rd-resource-decision.md
 ```
 
 ## Core Question
