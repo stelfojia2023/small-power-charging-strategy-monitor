@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>小功率充电桩战略工作台</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">S</div>
+        <div>
+          <h1>战略工作台</h1>
+          <p id="generatedAt">加载中</p>
+        </div>
+      </div>
+      <nav class="tabs" aria-label="主导航">
+        <button class="tab active" data-view="overview" type="button">总览</button>
+        <button class="tab" data-view="reports" type="button">报告</button>
+        <button class="tab" data-view="evidence" type="button">证据</button>
+        <button class="tab" data-view="competitors" type="button">竞品</button>
+        <button class="tab" data-view="gaps" type="button">缺口</button>
+        <button class="tab" data-view="documents" type="button">文档</button>
+      </nav>
+      <input id="globalSearch" class="global-search" type="search" placeholder="搜索全部内容" />
+    </header>
+
+    <main class="app">
+      <section id="overviewView" class="view active"></section>
+      <section id="reportsView" class="view"></section>
+      <section id="evidenceView" class="view"></section>
+      <section id="competitorsView" class="view"></section>
+      <section id="gapsView" class="view"></section>
+      <section id="documentsView" class="view"></section>
+    </main>
+
+    <dialog id="readerDialog" class="reader-dialog">
+      <div class="dialog-head">
+        <div>
+          <p id="dialogKicker"></p>
+          <h2 id="dialogTitle"></h2>
+        </div>
+        <button id="closeDialog" class="ghost-button" type="button">关闭</button>
+      </div>
+      <div id="dialogMeta" class="meta-row"></div>
+      <article id="dialogContent" class="markdown-body"></article>
+    </dialog>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script src="./data.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
