@@ -36,7 +36,23 @@
   }
 
   function esc(value) {
-    return String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function stripMarkup(value) {
+    return String(value ?? "")
+      .replace(/<span\s+style="color:[^"]*">(.*?)<\/span>/gis, "$1")
+      .replace(/<[^>]+>/g, "")
+      .replace(/`([^`]+)`/g, "$1")
+      .replace(/\*\*([^*]+)\*\*/g, "$1")
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+      .replace(/&nbsp;/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
   }
 
   function inline(value) {
@@ -44,7 +60,7 @@
     html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
     html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
     html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
-    html = html.replace(/&lt;span style=&quot;color:([a-z]+)&quot;&gt;(.+?)&lt;\/span&gt;/g, '<span style="color:$1">$2</span>');
+    html = html.replace(/&lt;span style=&quot;color:([a-z]+)&quot;&gt;(.+?)&lt;\/span&gt;/gis, '<span style="color:$1">$2</span>');
     return html;
   }
 
@@ -53,20 +69,22 @@
     const out = [];
     let i = 0, para = [];
     const flush = () => { if (para.length) { out.push(`<p>${inline(para.join(" "))}</p>`); para = []; } };
-    const isTableRow = (value) => /^\s*\|.*\|\s*$/.test(value);
-    const isSeparator = (value) => {
-      const cells = tableCells(value);
-      return cells.length > 0 && cells.every((cell) => /^:?-{3,}:?$/.test(cell.replace(/\s+/g, "")));
-    };
     const tableCells = (value) => {
       let row = value.trim();
       if (row.startsWith("|")) row = row.slice(1);
       if (row.endsWith("|")) row = row.slice(0, -1);
       return row.split("|").map((cell) => cell.trim());
     };
+    const isTableRow = (value) => /^\s*\|.*\|\s*$/.test(value);
+    const isSeparator = (value) => {
+      const cells = tableCells(value);
+      return cells.length > 0 && cells.every((cell) => /^:?-{3,}:?$/.test(cell.replace(/\s+/g, "")));
+    };
     const renderCell = (cell) => cell ? inline(cell) : "&nbsp;";
+
     while (i < lines.length) {
       const line = lines[i];
+
       if (line.startsWith("```")) {
         flush();
         const lang = line.replace(/^```/, "").trim().toLowerCase();
@@ -83,8 +101,15 @@
         i++;
         continue;
       }
+
       const h = line.match(/^(#{1,4})\s+(.+)$/);
-      if (h) { flush(); out.push(`<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`); i++; continue; }
+      if (h) {
+        flush();
+        out.push(`<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`);
+        i++;
+        continue;
+      }
+
       if (isTableRow(line) && i + 1 < lines.length && isSeparator(lines[i + 1])) {
         flush();
         const header = tableCells(line);
@@ -101,18 +126,26 @@
         out.push(`<div class="table-wrap"><table>${head}${body}</table></div>`);
         continue;
       }
+
       if (/^\s*[-*]\s+/.test(line)) {
-        flush(); const items = [];
+        flush();
+        const items = [];
         while (i < lines.length && /^\s*[-*]\s+/.test(lines[i])) items.push(lines[i++].replace(/^\s*[-*]\s+/, ""));
-        out.push(`<ul>${items.map((item) => `<li>${inline(item)}</li>`).join("")}</ul>`); continue;
+        out.push(`<ul>${items.map((item) => `<li>${inline(item)}</li>`).join("")}</ul>`);
+        continue;
       }
+
       if (/^\s*\d+\.\s+/.test(line)) {
-        flush(); const items = [];
+        flush();
+        const items = [];
         while (i < lines.length && /^\s*\d+\.\s+/.test(lines[i])) items.push(lines[i++].replace(/^\s*\d+\.\s+/, ""));
-        out.push(`<ol>${items.map((item) => `<li>${inline(item)}</li>`).join("")}</ol>`); continue;
+        out.push(`<ol>${items.map((item) => `<li>${inline(item)}</li>`).join("")}</ol>`);
+        continue;
       }
+
       if (!line.trim()) { flush(); i++; continue; }
-      para.push(line.trim()); i++;
+      para.push(line.trim());
+      i++;
     }
     flush();
     return out.join("\n");
@@ -124,7 +157,9 @@
     return `${doc.title}\n${doc.path}\n${doc.excerpt}\n${doc.content}`.toLowerCase().includes(q);
   }
 
-  function pill(text, cls = "") { return `<span class="pill ${cls}">${esc(text)}</span>`; }
+  function pill(text, cls = "") {
+    return `<span class="pill ${cls}">${esc(text)}</span>`;
+  }
 
   function openDoc(id) {
     const doc = docs.find((item) => item.id === id);
@@ -151,7 +186,13 @@
   }
 
   function latestReport() {
-    return (data.reports || []).find((doc) => doc.path.includes("reports/monthly/")) || (data.reports || [])[0];
+    const reports = data.reports || [];
+    return (
+      reports.find((doc) => doc.path.includes("reports/monthly/")) ||
+      reports.find((doc) => doc.path.includes("reports/quarterly/")) ||
+      reports.find((doc) => doc.path.includes("reports/weekly/")) ||
+      reports[0]
+    );
   }
 
   function counts() {
@@ -165,22 +206,162 @@
     return { documents: docs.length, evidence: ev.size, reports: (data.reports || []).length, red, orange, gaps };
   }
 
+  function sectionText(content, titlePattern) {
+    const lines = String(content || "").split(/\r?\n/);
+    const titleRe = titlePattern instanceof RegExp ? titlePattern : new RegExp(titlePattern);
+    const start = lines.findIndex((line) => /^#{2,4}\s+/.test(line) && titleRe.test(stripMarkup(line)));
+    if (start < 0) return "";
+    const level = (lines[start].match(/^#+/) || [""])[0].length;
+    const body = [];
+    for (let i = start + 1; i < lines.length; i++) {
+      const heading = lines[i].match(/^(#{2,4})\s+/);
+      if (heading && heading[1].length <= level) break;
+      body.push(lines[i]);
+    }
+    return body.join("\n");
+  }
+
+  function colorForText(text) {
+    const value = stripMarkup(text);
+    if (/止损|高风险|威胁强化|不成立|负毛利|红色|P0|触发/.test(value)) return "red";
+    if (/小幅调整|风险上升|部分变化|证据不足|观察|倒排|P1|预警|需内部验证/.test(value)) return "orange";
+    if (/灰|暂停|缺口/.test(value)) return "gray";
+    return "green";
+  }
+
+  function decisionFromReport(report) {
+    if (!report) {
+      return {
+        title: "暂无战略结论",
+        description: "尚未生成报告。请先运行周度、月度或季度战略复盘。",
+        cls: "gray",
+        pills: [pill("无报告", "gray")],
+      };
+    }
+
+    const text = stripMarkup(report.content);
+    const decisionLine = text.match(/战略调整判断[:：]\s*([^。；\n]+)[。；]?\s*([^。\n]*)/);
+    const decisionToken = text.match(/(?:^|\s)([ABCD][\.、]\s*(?:维持战略|小幅调整|重大调整|立即止损))/);
+
+    const title = decisionLine?.[1]?.trim() || decisionToken?.[1]?.trim() || "未识别战略结论";
+    const description =
+      decisionLine?.[2]?.trim() ||
+      firstExecutiveBullet(report) ||
+      "已从最新报告读取数据，但未识别到明确的战略调整说明。";
+    const cls = colorForText(title + description);
+
+    const pills = [
+      pill(report.category || "最新报告", cls === "red" ? "red" : "green"),
+      report.statusCounts?.red ? pill(`红色结论 ${report.statusCounts.red}`, "red") : "",
+      report.statusCounts?.orange ? pill(`橙色结论 ${report.statusCounts.orange}`, "orange") : "",
+      (report.evIds || []).length ? pill(`证据ID ${(report.evIds || []).length}`) : "",
+    ].filter(Boolean);
+
+    return { title, description, cls, pills };
+  }
+
+  function firstExecutiveBullet(report) {
+    const section = sectionText(report.content, /执行结论/);
+    const line = section.split(/\r?\n/).find((item) => /^\s*[-*]\s+/.test(item));
+    return line ? stripMarkup(line.replace(/^\s*[-*]\s+/, "")) : "";
+  }
+
+  function tableRows(section) {
+    return section
+      .split(/\r?\n/)
+      .filter((line) => /^\s*\|.*\|\s*$/.test(line) && !/^\s*\|\s*:?-{3,}/.test(line))
+      .map((line) => {
+        let row = line.trim();
+        if (row.startsWith("|")) row = row.slice(1);
+        if (row.endsWith("|")) row = row.slice(0, -1);
+        return row.split("|").map((cell) => stripMarkup(cell));
+      });
+  }
+
+  function hypothesisRows(report) {
+    const fallback = ["H1 商品化", "H2 OEM/ODM", "H3 挚达威胁", "H4 公牛C端", "H5 小功率DC", "H6 负毛利"]
+      .map((h) => `<div class="status-row"><strong>${esc(h)}</strong>${pill("待报告更新", "gray")}</div>`)
+      .join("");
+
+    if (!report) return fallback;
+
+    const rows = tableRows(sectionText(report.content, /战略假设验证|H1-H6/))
+      .filter((row) => /^H[1-6]/.test(row[0] || ""))
+      .slice(0, 6);
+
+    if (!rows.length) return fallback;
+
+    return rows.map((row) => {
+      const hypothesis = row[0] || "未命名假设";
+      const status = row[1] || "未识别";
+      return `<div class="status-row"><strong>${esc(hypothesis)}</strong>${pill(status, colorForText(status))}</div>`;
+    }).join("");
+  }
+
+  function priorityCards(report) {
+    if (!report) {
+      return [
+        card("先生成战略报告", "运行月度或周度任务后，总览会自动读取报告结论。", "gray"),
+      ].join("");
+    }
+
+    const rows = tableRows(sectionText(report.content, /1-4周行动|立即动作|行动/))
+      .filter((row) => row.some((cell) => /P0|P1|P2|红|橙|高|中/.test(cell)))
+      .slice(0, 3);
+
+    if (rows.length) {
+      return rows.map((row) => {
+        const title = row[0] || row[1] || "行动项";
+        const desc = row[1] && row[1] !== title ? row[1] : row.slice(2, 5).filter(Boolean).join("；");
+        const cls = colorForText(row.join(" "));
+        return card(title, desc || "详见最新报告行动表。", cls);
+      }).join("");
+    }
+
+    return sectionText(report.content, /执行结论/)
+      .split(/\r?\n/)
+      .filter((line) => /^\s*[-*]\s+/.test(line))
+      .slice(0, 3)
+      .map((line) => {
+        const text = stripMarkup(line.replace(/^\s*[-*]\s+/, ""));
+        const [title, ...rest] = text.split(/[：:]/);
+        return card(title || "重点事项", rest.join("：") || text, colorForText(text));
+      })
+      .join("");
+  }
+
+  function competitorCards(report) {
+    if (!report) {
+      return card("等待竞品报告", "生成报告后，系统会从竞品战略更新表中提取威胁项。", "gray");
+    }
+
+    const rows = tableRows(sectionText(report.content, /竞品战略更新|竞品/))
+      .filter((row) => row.length >= 3 && !/竞品|对象/.test(row[0]))
+      .slice(0, 4);
+
+    if (!rows.length) {
+      return card("未识别竞品表", "最新报告中未找到可解析的竞品战略更新表。", "gray");
+    }
+
+    return rows.map((row) => {
+      const name = row[0] || "竞品";
+      const desc = [row[2], row[5], row[6]].filter(Boolean).join("；") || row.slice(1, 4).filter(Boolean).join("；");
+      return card(name, desc || "详见最新报告。", colorForText(row.join(" ")));
+    }).join("");
+  }
+
   function renderOverview() {
     const c = counts();
     const latest = latestReport();
-    const hRows = ["H1 商品化", "H2 OEM/ODM", "H3 挚达威胁", "H4 公牛C端", "H5 小功率DC", "H6 负毛利"].map((h, idx) => {
-      const cls = idx === 2 || idx === 5 ? "red" : idx === 1 ? "orange" : "green";
-      const status = idx === 2 ? "威胁强化" : idx === 5 ? "高风险" : idx === 1 ? "风险上升" : "成立";
-      return `<div class="status-row"><strong>${h}</strong>${pill(status, cls)}</div>`;
-    }).join("");
+    const decision = decisionFromReport(latest);
 
     views.overview.innerHTML = `
       <div class="hero">
         <section class="decision-panel">
-          <p class="kicker">当前战略结论</p>
-          <h2>B. 小幅调整</h2>
-          <p>OEM/ODM 主线继续成立，但执行重点应转为有毛利红线地拿订单；CCC、VAVE、客户集中和竞品复合威胁需要优先闭环。</p>
-          <div class="pill-row">${pill("最新月报", "green")}${pill("负毛利需内部验证", "red")}${pill("CCC倒计时", "orange")}</div>
+          <p class="kicker">当前战略结论 · ${latest ? esc(latest.path) : "无报告"}</p>
+          <h2>${esc(decision.title)}</h2>
+          <p>${esc(decision.description)}</p>
+          <div class="pill-row">${decision.pills.join("")}</div>
         </section>
         <section class="metric-grid">
           <div class="metric"><span>报告</span><strong>${c.reports}</strong></div>
@@ -190,17 +371,9 @@
         </section>
       </div>
       <div class="dashboard-grid">
-        <section class="panel"><h3>H1-H6 状态</h3><div class="status-list">${hRows}</div></section>
-        <section class="panel"><h3>最高优先级</h3><div class="card-list">
-          ${card("五菱/小鹏项目红线", "补齐报价、BOM、项目毛利、竞品报价和服务范围。", "red")}
-          ${card("CCC 认证倒排", "2026-08-01 后未获证产品存在准入风险。", "orange")}
-          ${card("新 OEM 客户漏斗", "降低两大客户集中风险。", "green")}
-        </div></section>
-        <section class="panel"><h3>竞品威胁</h3><div class="card-list">
-          ${card("挚达/智达", "复合型竞品：OEM + 安装服务 + 海外 + 平台。", "red")}
-          ${card("公牛", "C端品牌和渠道强，不建议正面战。", "orange")}
-          ${card("科大智能", "系统方案和客户入口型潜在对手。", "orange")}
-        </div></section>
+        <section class="panel"><h3>H1-H6 状态</h3><div class="status-list">${hypothesisRows(latest)}</div></section>
+        <section class="panel"><h3>最高优先级</h3><div class="card-list">${priorityCards(latest)}</div></section>
+        <section class="panel"><h3>竞品威胁</h3><div class="card-list">${competitorCards(latest)}</div></section>
         <section class="panel wide"><h3>最新报告</h3>${latest ? docCard(latest) : "暂无报告"}</section>
         <section class="panel"><h3>下一步</h3><div class="card-list">
           ${card("刷新 viewer", "内容变更后运行 python3 tools/build_viewer_data.py。")}
@@ -210,7 +383,8 @@
   }
 
   function card(title, desc, cls = "") {
-    return `<div class="status-row"><div><strong>${esc(title)}</strong><p>${esc(desc)}</p></div>${cls ? pill(cls === "red" ? "高" : cls === "orange" ? "中" : "稳", cls) : ""}</div>`;
+    const label = cls === "red" ? "高" : cls === "orange" ? "中" : cls === "gray" ? "待定" : cls === "green" ? "稳" : "";
+    return `<div class="status-row"><div><strong>${esc(title)}</strong><p>${esc(desc)}</p></div>${label ? pill(label, cls) : ""}</div>`;
   }
 
   function docCard(doc) {
@@ -221,11 +395,11 @@
     return `<article class="doc-card" data-open="${esc(doc.id)}"><h3>${esc(doc.title)}</h3><p>${esc(doc.path)}</p><div class="pill-row">${pill(doc.category)}${colorTags.join("")}</div></article>`;
   }
 
-  function renderListView(view, items, filters, activeKey, title) {
+  function renderListView(view, items, filtersHtml, title) {
     const filtered = items.filter(match);
     view.innerHTML = `
       <div class="split-layout">
-        <aside class="side-panel"><h3>${title}</h3><div class="filter-stack">${filters}</div></aside>
+        <aside class="side-panel"><h3>${title}</h3><div class="filter-stack">${filtersHtml}</div></aside>
         <section class="card-list">${filtered.map(docCard).join("") || "<p>没有匹配内容。</p>"}</section>
       </div>`;
   }
@@ -235,17 +409,17 @@
   }
 
   function renderReports() {
-    const all = (data.reports || []);
+    const all = data.reports || [];
     const cats = ["全部", ...new Set(all.map((doc) => doc.category))];
     const items = all.filter((doc) => state.reportType === "全部" || doc.category === state.reportType);
-    renderListView(views.reports, items, filters(cats, state.reportType, "report-filter"), state.reportType, "报告类型");
+    renderListView(views.reports, items, filters(cats, state.reportType, "report-filter"), "报告类型");
   }
 
   function renderEvidence() {
-    const all = (data.evidence || []);
+    const all = data.evidence || [];
     const groups = ["全部", ...new Set(all.map((doc) => doc.group || doc.category))];
     const items = all.filter((doc) => state.evidenceGroup === "全部" || doc.group === state.evidenceGroup || doc.category === state.evidenceGroup);
-    renderListView(views.evidence, items, filters(groups, state.evidenceGroup, "evidence-filter"), state.evidenceGroup, "证据对象");
+    renderListView(views.evidence, items, filters(groups, state.evidenceGroup, "evidence-filter"), "证据对象");
   }
 
   function renderCompetitors() {
@@ -275,14 +449,19 @@
   function renderDocuments() {
     const cats = ["全部", ...new Set(docs.map((doc) => doc.category))];
     const items = docs.filter((doc) => (state.docCategory === "全部" || doc.category === state.docCategory) && match(doc));
-    renderListView(views.documents, items, filters(cats, state.docCategory, "doc-filter"), state.docCategory, "文档分类");
+    renderListView(views.documents, items, filters(cats, state.docCategory, "doc-filter"), "文档分类");
   }
 
   function render() {
     $("generatedAt").textContent = `数据 ${data.generatedAt || ""}`;
     Object.entries(views).forEach(([key, el]) => el.classList.toggle("active", key === state.view));
     document.querySelectorAll(".tab").forEach((tab) => tab.classList.toggle("active", tab.dataset.view === state.view));
-    renderOverview(); renderReports(); renderEvidence(); renderCompetitors(); renderGaps(); renderDocuments();
+    renderOverview();
+    renderReports();
+    renderEvidence();
+    renderCompetitors();
+    renderGaps();
+    renderDocuments();
   }
 
   document.addEventListener("click", (event) => {
